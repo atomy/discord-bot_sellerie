@@ -1,0 +1,13 @@
+#!/bin/bash
+
+export APP_NAME=discord-bot_sellerie
+export ECR_PREFIX=xxx.dkr.ecr.eu-central-1.amazonaws.com
+export DISCORD_API_KEY=y.y.y
+export DISCORD_WEBHOOK_URL=https://discordapp.com/api/webhooks/y/y
+export DISCORD_CHANNEL_ID=1234567890
+export DB_HOST=127.0.0.1
+export DB_USER=discord-bot_sellerie
+export DB_PASS=123
+export DB_NAME=discord-bot_sellerie
+export DEPLOY_LOGIN=root@127.0.0.1
+export DEPLOY_HOST=discord-bot_sellerie

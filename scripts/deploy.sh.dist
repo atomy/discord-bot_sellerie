@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+scp ~/.docker/config.json app@1.1.1.1:~/.docker/config.json
+scp docker-compose.yml app@1.1.1.1:/home/app/apps/stuff.prod.google.com/
+ssh app@1.1.1.1 "cd /home/app/apps/stuff.prod.google.com && docker-compose -f docker-compose.yml pull && docker-compose -f docker-compose.yml up -d --remove-orphans"
