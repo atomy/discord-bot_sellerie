@@ -111,22 +111,27 @@ const refreshStatus = (echoInChannel) => {
 
     // Run the query
     const query = `
-    SELECT DATE(timestamp) AS date, SUM(milliliter) AS total_ml
-    FROM consumption_data
-    WHERE DATE(timestamp) = ?
-    GROUP BY DATE(timestamp)
+SELECT DATE(timestamp) AS date, SUM(milliliter) AS total_ml
+FROM consumption_data
+WHERE 
+    (DATE(timestamp) = ? AND HOUR(timestamp) >= 5)
+    OR
+    (DATE(timestamp) = DATE_ADD(?, INTERVAL 1 DAY) AND HOUR(timestamp) < 5)
+GROUP BY DATE(timestamp);
   `;
 
-    connection.query(query, [currentDate], (err, results) => {
+    connection.query(query, [currentDate, currentDate], (err, results) => {
         if (err) {
             console.error('Error executing the query:', err);
             connection.end();
             return;
         }
 
+        let statusText;
+
         // Process the query results
         if (results.length > 0) {
-            let output, statusText;
+            let output;
             const totalMilliliters = results[0].total_ml;
 
             if (totalMilliliters > 1000) {
@@ -141,11 +146,12 @@ const refreshStatus = (echoInChannel) => {
 
             if (echoInChannel)
                 sendMessage(channel, output);
-
-            setStatus(statusText);
         } else {
-            console.log(`No data found for ${currentDate}.`);
+            statusText = `TODAY: 0 ml`;
+            console.log(`No data found for ${currentDate}. Defaulting to 0 ml`);
         }
+
+        setStatus(statusText);
 
         // Close the connection
         connection.end((err) => {
