@@ -114,13 +114,15 @@ const refreshStatus = (echoInChannel) => {
 SELECT DATE(timestamp) AS date, SUM(milliliter) AS total_ml
 FROM consumption_data
 WHERE 
-    (DATE(timestamp) = ? AND HOUR(timestamp) >= 5)
+    (HOUR(timestamp) >= 5 AND DATE(timestamp) = ?)
     OR
-    (DATE(timestamp) = DATE_ADD(?, INTERVAL 1 DAY) AND HOUR(timestamp) < 5)
+    (HOUR(timestamp) >= 0 AND HOUR(timestamp) < 5 AND DATE(timestamp) = DATE_SUB(?, INTERVAL 1 DAY))
+    OR
+    (HOUR(timestamp) >= 5 AND HOUR(timestamp) < 24 AND DATE(timestamp) = DATE_SUB(?, INTERVAL 1 DAY))
 GROUP BY DATE(timestamp);
   `;
 
-    connection.query(query, [currentDate, currentDate], (err, results) => {
+    connection.query(query, [currentDate, currentDate, currentDate], (err, results) => {
         if (err) {
             console.error('Error executing the query:', err);
             connection.end();
