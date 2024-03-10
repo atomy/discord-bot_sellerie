@@ -114,11 +114,7 @@ const refreshStatus = (echoInChannel) => {
 SELECT DATE(timestamp) AS date, SUM(milliliter) AS total_ml
 FROM consumption_data
 WHERE 
-    (HOUR(timestamp) >= 5 AND DATE(timestamp) = ?)
-    OR
-    (HOUR(timestamp) >= 0 AND HOUR(timestamp) < 5 AND DATE(timestamp) = DATE_SUB(?, INTERVAL 1 DAY))
-    OR
-    (HOUR(timestamp) >= 5 AND HOUR(timestamp) < 24 AND DATE(timestamp) = DATE_SUB(?, INTERVAL 1 DAY))
+    DATE(timestamp) = CURDATE()
 GROUP BY DATE(timestamp);
   `;
 
@@ -206,12 +202,31 @@ client.on('messageCreate', msg => {
             }
 
             console.log("!seller command received, args: " + args);
-            if (/^\d+$/.test(args) && args > 0 && args < 10000) {
-                insertData(args, (result) => {
+            var argsArray = args.split(/\s+/);
+
+            // When 2rd argument is oz/cups convert it to ml.
+            if (argsArray[1]) {
+                if (["oz", "cups", "ml"].includes(argsArray[1])) {
+                    // Convert oz into ml.
+                    if (argsArray[1] === "oz") {
+                        argsArray[0] = Math.round(argsArray[0] * 29.5735);
+                    } else if (argsArray[1] === "cups") { // Convert cups into ml.
+                        argsArray[0] = Math.round(argsArray[0] * 236.588);
+                    }
+                } else {
+                    sendMessage(channel, "ERR: Validation failed, arg-1 validation failed (oz/cups/ml)!");
+                    return;
+                }
+            }
+
+            if (/^\d+$/.test(argsArray[0]) && argsArray[0] > 0 && argsArray[0] < 10000) {
+                console.log("lets log " + argsArray[0] + " ml!");
+                insertData(argsArray[0], (result) => {
                     sendMessage(channel, "Logged Sellerie: " + result);
                     refreshStatus(true);
                 });
             } else {
+                console.log(`Failed to validate arg: ${argsArray[0]}`);
                 sendMessage(channel, "ERR: Args validation failed!");
             }
         } else {
