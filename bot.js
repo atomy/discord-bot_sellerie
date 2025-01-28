@@ -229,9 +229,6 @@ client.on('messageCreate', msg => {
                 console.log(`Failed to validate arg: ${argsArray[0]}`);
                 sendMessage(channel, "ERR: Args validation failed!");
             }
-        } else {
-            sendMessage(channel, "ERR: Unknown command: " + command.toLowerCase());
-            console.log("unknown command: " + command.toLowerCase());
         }
     }
 });
